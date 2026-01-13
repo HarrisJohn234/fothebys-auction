@@ -10,10 +10,7 @@ class BidSeeder extends Seeder
 {
     public function run(): void
     {
-        /** @var class-string<\Illuminate\Database\Eloquent\Model> $User */
-        $User = config('auth.providers.users.model');
-
-        $clients = $User::query()->where('role', 'client')->get();
+        $clients = DB::table('users')->where('role', 'client')->get();
         $lots = Lot::query()
             ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN'])
             ->get();
@@ -28,7 +25,7 @@ class BidSeeder extends Seeder
         $target = min(30, $clients->count() * $lots->count());
         $created = 0;
         $attempts = 0;
-        $maxAttempts = 2000; // prevent infinite loop if uniqueness blocks everything
+        $maxAttempts = 2000;
 
         while ($created < $target && $attempts < $maxAttempts) {
             $attempts++;

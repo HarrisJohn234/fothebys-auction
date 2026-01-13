@@ -2,21 +2,28 @@
 
 namespace App\Http\Controllers;
 
-use App\Domain\Categories\Models\Category;
+use App\Application\Auctions\Services\AuctionLifecycleService;
 use App\Domain\Lots\Models\Lot;
+use App\Domain\Categories\Models\Category;
 use Illuminate\Http\Request;
 
 class PublicCatalogueController
 {
-    public function index(Request $request)
+    public function index(Request $request, AuctionLifecycleService $lifecycle)
     {
+        $lifecycle->closeEndedAuctions();
+
         $q = Lot::query()
-            ->with('category')
+            ->with(['category', 'auction'])
+            ->whereHas('auction', function ($a) {
+                $a->where('status', 'LIVE');
+            })
             ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN']);
 
         // "complex search" v1: multi-field + estimate range + partial match
         if ($request->filled('q')) {
-            $term = $request->string('q');
+            $term = $request->string('q')->toString();
+
             $q->where(function ($sub) use ($term) {
                 $sub->where('artist_name', 'like', "%{$term}%")
                     ->orWhere('subject_classification', 'like', "%{$term}%")
@@ -26,11 +33,21 @@ class PublicCatalogueController
         }
 
         if ($request->filled('category')) {
-            $q->whereHas('category', fn ($c) => $c->where('slug', $request->string('category')));
+            $slug = $request->string('category')->toString();
+
+            $q->whereHas('category', function ($c) use ($slug) {
+                $c->where('slug', $slug);
+            });
         }
 
-        if ($request->filled('min')) $q->where('estimate_low', '>=', $request->integer('min'));
-        if ($request->filled('max')) $q->where('estimate_low', '<=', $request->integer('max'));
+        if ($request->filled('min')) {
+            $q->where('estimate_low', '>=', $request->integer('min'));
+        }
+
+        if ($request->filled('max')) {
+            
+            $q->where('estimate_high', '<=', $request->integer('max'));
+        }
 
         $lots = $q->latest()->paginate(18)->withQueryString();
         $categories = Category::orderBy('name')->get();
@@ -40,9 +57,16 @@ class PublicCatalogueController
 
     public function show(Lot $lot)
     {
-        abort_if(in_array($lot->status, ['ARCHIVED', 'WITHDRAWN']), 404);
+       
+        abort_if(
+            in_array($lot->status, ['ARCHIVED', 'WITHDRAWN']) ||
+            !$lot->auction ||
+            $lot->auction->status !== 'LIVE',
+            404
+        );
 
-        $lot->load('category');
+        $lot->load(['category', 'auction']);
+
         return view('public.catalogue.show', compact('lot'));
     }
 }
