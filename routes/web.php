@@ -39,3 +39,4 @@ Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(fun
     // reports
     Route::get('reports/sales', [ReportAdminController::class, 'salesSummary'])->name('reports.sales');
 });
+require __DIR__.'/auth.php';
