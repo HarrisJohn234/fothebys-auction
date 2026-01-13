@@ -22,7 +22,7 @@ Route::get('/catalogue', [PublicCatalogueController::class, 'index'])->name('pub
 Route::get('/lots/{lot}', [PublicCatalogueController::class, 'show'])->name('public.lots.show');
 
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
-    Route::resource('auctions', AuctionAdminController::class);
+    Route::resource('auctions', AuctionAdminController::class)->names('auctions');
     Route::resource('lots', LotAdminController::class);
 
     // bids admin

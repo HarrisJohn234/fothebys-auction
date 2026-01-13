@@ -3,67 +3,145 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Domain\Auctions\Models\Auction;
+use App\Domain\Lots\Models\Lot;
+use App\Http\Controllers\Controller;
+use App\Http\Requests\Admin\AuctionStoreRequest;
+use App\Http\Requests\Admin\AuctionUpdateRequest;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
-class AuctionAdminController
+class AuctionAdminController extends Controller
 {
-    public function index()
+    public function __construct()
     {
-        $auctions = Auction::query()->latest()->paginate(15);
+        $this->middleware(['auth', 'admin']);
+    }
+
+    public function index(Request $request): View
+    {
+        $query = Auction::query()->orderByDesc('id');
+
+        if ($request->filled('q')) {
+            $q = $request->string('q')->toString();
+            $query->where('title', 'like', "%{$q}%");
+        }
+
+        if ($request->filled('status')) {
+            $query->where('status', $request->string('status')->toString());
+        }
+
+        $auctions = $query->paginate(15)->withQueryString();
+
         return view('admin.auctions.index', compact('auctions'));
     }
 
-    public function create()
+    public function create(): View
     {
-        return view('admin.auctions.create');
+        // Only assign lots that are not archived and not already assigned (or allow reassign in edit)
+        $lots = Lot::query()
+            ->with('category')
+            ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN'])
+            ->whereNull('auction_id')
+            ->orderByDesc('id')
+            ->get();
+
+        return view('admin.auctions.create', compact('lots'));
     }
 
-    public function store(Request $request)
+    public function store(AuctionStoreRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'title' => ['required','string','max:255'],
-            'theme' => ['nullable','string','max:255'],
-            'auction_type' => ['required','in:PHYSICAL,ONLINE_ONLY'],
-            'starts_at' => ['nullable','date'],
-            'duration_minutes' => ['nullable','integer','min:1'],
-            'status' => ['required','in:DRAFT,SCHEDULED,LIVE,CLOSED,ARCHIVED'],
-        ]);
+        $data = $request->validated();
 
-        $data['created_by'] = auth()->id();
+        DB::transaction(function () use ($data, &$auction) {
+            $auction = Auction::create([
+                'title' => $data['title'],
+                'starts_at' => $data['starts_at'],
+                'ends_at' => $data['ends_at'],
+                'status' => $data['status'],
+            ]);
 
-        $auction = Auction::create($data);
-        return redirect()->route('admin.auctions.show', $auction);
+            $lotIds = $data['lots'] ?? [];
+            if (!empty($lotIds)) {
+                Lot::whereIn('id', $lotIds)->update(['auction_id' => $auction->id]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.auctions.index')
+            ->with('success', 'Auction created successfully.');
     }
 
-    public function show(Auction $auction)
+    public function show(Auction $auction): View
     {
-        $auction->load('lots');
+        $auction->load(['lots.category']);
+
         return view('admin.auctions.show', compact('auction'));
     }
 
-    public function edit(Auction $auction)
+    public function edit(Auction $auction): View
     {
-        return view('admin.auctions.edit', compact('auction'));
+        $auction->load('lots');
+
+        // Allow selecting:
+        // - currently assigned to this auction
+        // - unassigned lots
+        $lots = Lot::query()
+            ->with('category')
+            ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN'])
+            ->where(function ($q) use ($auction) {
+                $q->whereNull('auction_id')
+                  ->orWhere('auction_id', $auction->id);
+            })
+            ->orderByDesc('id')
+            ->get();
+
+        $selectedLotIds = $auction->lots->pluck('id')->all();
+
+        return view('admin.auctions.edit', compact('auction', 'lots', 'selectedLotIds'));
     }
 
-    public function update(Request $request, Auction $auction)
+    public function update(AuctionUpdateRequest $request, Auction $auction): RedirectResponse
     {
-        $data = $request->validate([
-            'title' => ['required','string','max:255'],
-            'theme' => ['nullable','string','max:255'],
-            'auction_type' => ['required','in:PHYSICAL,ONLINE_ONLY'],
-            'starts_at' => ['nullable','date'],
-            'duration_minutes' => ['nullable','integer','min:1'],
-            'status' => ['required','in:DRAFT,SCHEDULED,LIVE,CLOSED,ARCHIVED'],
-        ]);
+        $data = $request->validated();
 
-        $auction->update($data);
-        return redirect()->route('admin.auctions.show', $auction);
+        DB::transaction(function () use ($auction, $data) {
+            $auction->update([
+                'title' => $data['title'],
+                'starts_at' => $data['starts_at'],
+                'ends_at' => $data['ends_at'],
+                'status' => $data['status'],
+            ]);
+
+            $newLotIds = $data['lots'] ?? [];
+
+            // Unassign lots no longer selected
+            Lot::where('auction_id', $auction->id)
+                ->whereNotIn('id', $newLotIds)
+                ->update(['auction_id' => null]);
+
+            // Assign selected lots to this auction
+            if (!empty($newLotIds)) {
+                Lot::whereIn('id', $newLotIds)->update(['auction_id' => $auction->id]);
+            }
+        });
+
+        return redirect()
+            ->route('admin.auctions.index')
+            ->with('success', 'Auction updated successfully.');
     }
 
-    public function destroy(Auction $auction)
+    public function destroy(Auction $auction): RedirectResponse
     {
-        $auction->update(['status' => 'ARCHIVED']);
-        return redirect()->route('admin.auctions.index');
+        // Sprint-friendly: “delete” means unassign lots then remove auction
+        DB::transaction(function () use ($auction) {
+            Lot::where('auction_id', $auction->id)->update(['auction_id' => null]);
+            $auction->delete();
+        });
+
+        return redirect()
+            ->route('admin.auctions.index')
+            ->with('success', 'Auction deleted successfully.');
     }
 }
