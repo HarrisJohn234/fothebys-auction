@@ -34,39 +34,49 @@
     </form>
 
     <div class="border rounded overflow-hidden">
-        <table class="w-full text-sm">
+        <table class="w-full text-sm table-fixed border-collapse">
+            <colgroup>
+                <col class="w-32">
+                <col class="w-48">
+                <col class="w-48">
+                <col class="w-56">
+                <col class="w-40">
+                <col class="w-28">
+            </colgroup>
+
             <thead class="bg-gray-50">
-                <tr class="text-left">
-                    <th class="p-3">Lot #</th>
-                    <th class="p-3">Artist</th>
-                    <th class="p-3">Category</th>
-                    <th class="p-3">Est.</th>
-                    <th class="p-3">Status</th>
-                    <th class="p-3"></th>
+                <tr>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Lot #</th>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Artist</th>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Category</th>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Estimate</th>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Status</th>
+                    <th class="!p-3 !text-center !align-middle font-semibold">Actions</th>
                 </tr>
             </thead>
+
             <tbody>
-                @forelse($lots as $lot)
+                @foreach ($lots as $lot)
                     <tr class="border-t">
-                        <td class="p-3 font-mono">{{ $lot->lot_number }}</td>
-                        <td class="p-3">{{ $lot->artist_name }}</td>
-                        <td class="p-3">{{ $lot->category?->name }}</td>
-                        <td class="p-3">
-                            £{{ number_format((float)$lot->estimate_low, 2) }}–£{{ number_format((float)$lot->estimate_high, 2) }}
+                        <td class="!p-3 !text-center !align-middle font-mono">{{ $lot->lot_number }}</td>
+                        <td class="!p-3 !text-center !align-middle">{{ $lot->artist_name }}</td>
+                        <td class="!p-3 !text-center !align-middle">{{ $lot->category?->name }}</td>
+                        <td class="!p-3 !text-center !align-middle">
+                            £{{ number_format($lot->estimate_low) }}
+                            @if($lot->estimate_high)
+                                –£{{ number_format($lot->estimate_high) }}
+                            @endif
                         </td>
-                        <td class="p-3">{{ $lot->status }}</td>
-                        <td class="p-3 text-right">
-                            <a class="underline" href="{{ route('admin.lots.show', $lot) }}">View</a>
+                        <td class="!p-3 !text-center !align-middle">{{ $lot->status }}</td>
+                        <td class="!p-3 !text-center !align-middle">
+                            <a href="{{ route('admin.lots.show', $lot) }}" class="underline">View</a>
                         </td>
                     </tr>
-                @empty
-                    <tr>
-                        <td class="p-3" colspan="6">No lots found.</td>
-                    </tr>
-                @endforelse
+                @endforeach
             </tbody>
         </table>
     </div>
+
 
     <div class="mt-4">
         {{ $lots->links() }}

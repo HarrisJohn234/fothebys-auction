@@ -10,7 +10,8 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
-
+use App\Http\Requests\Admin\LotStoreRequest;
+use App\Http\Requests\Admin\LotUpdateRequest;
 class LotAdminController extends Controller
 {
     public function __construct(private readonly LotService $lotService)
@@ -63,40 +64,15 @@ class LotAdminController extends Controller
         return view('admin.lots.create', compact('categories'));
     }
 
-    public function store(Request $request): RedirectResponse
+    public function store(LotStoreRequest $request): RedirectResponse
     {
-        $data = $request->validate([
-            'artist_name' => ['required', 'string', 'max:255'],
-            'year_produced' => ['required', 'integer', 'min:1000', 'max:' . (date('Y') + 1)],
-            'subject_classification' => ['required', 'string', 'max:100'],
-            'description' => ['required', 'string'],
-            'estimate_low' => ['required', 'numeric', 'min:0'],
-            'estimate_high' => ['required', 'numeric', 'gte:estimate_low'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'status' => ['required', 'string', 'max:50'],
-            'category_metadata' => ['nullable', 'string'], // later: per-category rules
-        ]);
-        $metaRaw = $data['category_metadata'] ?? null;
+    $data = $request->validated();
 
-        if (is_string($metaRaw) && trim($metaRaw) !== '') {
-            $decoded = json_decode($metaRaw, true);
+    $this->lotService->create($data);
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return back()
-                    ->withErrors(['category_metadata' => 'Category metadata must be valid JSON.'])
-                    ->withInput();
-            }
-
-            $data['category_metadata'] = $decoded;
-        } else {
-            $data['category_metadata'] = [];
-        }
-
-        $lot = $this->lotService->create($data);
-
-        return redirect()
-            ->route('admin.lots.show', $lot)
-            ->with('success', 'Lot created successfully.');
+    return redirect()
+        ->route('admin.lots.index')
+        ->with('success', 'Lot created successfully.');
     }
 
     public function show(Lot $lot): View
@@ -119,40 +95,15 @@ class LotAdminController extends Controller
         return view('admin.lots.edit', compact('lot', 'categories'));
     }
 
-    public function update(Request $request, Lot $lot): RedirectResponse
+    public function update(LotUpdateRequest $request, Lot $lot): RedirectResponse
     {
-        $data = $request->validate([
-            'artist_name' => ['required', 'string', 'max:255'],
-            'year_produced' => ['required', 'integer', 'min:1000', 'max:' . (date('Y') + 1)],
-            'subject_classification' => ['required', 'string', 'max:100'],
-            'description' => ['required', 'string'],
-            'estimate_low' => ['required', 'numeric', 'min:0'],
-            'estimate_high' => ['required', 'numeric', 'gte:estimate_low'],
-            'category_id' => ['required', 'exists:categories,id'],
-            'status' => ['required', 'string', 'max:50'],
-            'category_metadata' => ['nullable', 'string'],
-        ]);
-        $metaRaw = $data['category_metadata'] ?? null;
+    $data = $request->validated();
 
-        if (is_string($metaRaw) && trim($metaRaw) !== '') {
-            $decoded = json_decode($metaRaw, true);
+    $this->lotService->update($lot, $data);
 
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                return back()
-                    ->withErrors(['category_metadata' => 'Category metadata must be valid JSON.'])
-                    ->withInput();
-            }
-
-            $data['category_metadata'] = $decoded;
-        } else {
-            $data['category_metadata'] = [];
-        }
-
-        $this->lotService->update($lot, $data);
-
-        return redirect()
-            ->route('admin.lots.show', $lot)
-            ->with('success', 'Lot updated successfully.');
+    return redirect()
+        ->route('admin.lots.index')
+        ->with('success', 'Lot updated successfully.');
     }
 
     public function destroy(Lot $lot): RedirectResponse
