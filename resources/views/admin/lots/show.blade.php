@@ -1,112 +1,77 @@
-<x-app-layout>
-    <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Lot {{ $lot->lot_number }}
-            </h2>
+@extends('layouts.app')
 
-            <div class="flex items-center gap-3">
-                @if (Route::has('admin.lots.edit'))
-                <a href="{{ route('admin.lots.edit', $lot) }}"
-                    class="inline-flex items-center px-4 py-2 bg-gray-800 text-white rounded-md text-xs font-semibold uppercase tracking-widest hover:bg-gray-700">
-                    Edit
-                </a>
-                @endif
-
-                <a href="{{ route('admin.lots.index') }}" class="text-sm underline text-gray-700">
-                    Back to lots
-                </a>
-            </div>
+@section('content')
+<div class="max-w-5xl mx-auto p-6">
+    <div class="flex items-start justify-between gap-4 mb-6">
+        <div>
+            <h1 class="text-2xl font-semibold">Lot {{ $lot->lot_number }}</h1>
+            <p class="text-sm text-gray-600">{{ $lot->artist_name }} • {{ $lot->category?->name }}</p>
         </div>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="flex gap-2">
+            <a href="{{ route('admin.lots.edit', $lot) }}" class="border rounded px-4 py-2">Edit</a>
 
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
-                    <div><span class="font-semibold">Artist:</span> {{ $lot->artist_name }}</div>
-                    <div><span class="font-semibold">Year:</span> {{ $lot->year_produced }}</div>
-                    <div><span class="font-semibold">Subject:</span> {{ $lot->subject_classification }}</div>
-                    <div><span class="font-semibold">Status:</span> {{ $lot->status }}</div>
-                    <div><span class="font-semibold">Category:</span> {{ $lot->category?->name ?? '—' }}</div>
-                    <div><span class="font-semibold">Auction date:</span> {{ $lot->auction_date?->format('Y-m-d') ?? '—' }}</div>
-                    <div><span class="font-semibold">Estimate low:</span> {{ number_format($lot->estimate_low, 0) }}</div>
-                    <div><span class="font-semibold">Estimate high:</span> {{ $lot->estimate_high !== null ? number_format($lot->estimate_high, 0) : '—' }}</div>
-                </div>
-
-                <div class="mt-6">
-                    <div class="font-semibold mb-1">Description</div>
-                    <div class="text-sm text-gray-700 whitespace-pre-line">{{ $lot->description }}</div>
-                </div>
-            </div>
-
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <div class="font-semibold mb-3">Category metadata</div>
-
-                @php($meta = is_array($lot->category_metadata) ? $lot->category_metadata : [])
-
-                @if (empty($meta))
-                <div class="text-sm text-gray-600">No metadata.</div>
-                @else
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="text-left border-b">
-                            <tr>
-                                <th class="py-2 pr-4">Key</th>
-                                <th class="py-2 pr-4">Value</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($meta as $k => $v)
-                            <tr class="border-b">
-                                <td class="py-2 pr-4 font-mono">{{ $k }}</td>
-                                <td class="py-2 pr-4">
-                                    @if (is_array($v))
-                                    <pre class="text-xs">{{ json_encode($v, JSON_PRETTY_PRINT) }}</pre>
-                                    @else
-                                    {{ (string) $v }}
-                                    @endif
-                                </td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-            </div>
-
-            <div class="bg-white shadow-sm sm:rounded-lg p-6">
-                <div class="font-semibold mb-3">Bids</div>
-
-                @php($bidsList = isset($bids) ? $bids : ($lot->relationLoaded('bids') ? $lot->bids : $lot->bids()->get()))
-
-                @if ($bidsList->count() === 0)
-                <div class="text-sm text-gray-600">No bids yet.</div>
-                @else
-                <div class="overflow-x-auto">
-                    <table class="min-w-full text-sm">
-                        <thead class="text-left border-b">
-                            <tr>
-                                <th class="py-2 pr-4">Bidder</th>
-                                <th class="py-2 pr-4">Amount</th>
-                                <th class="py-2 pr-4">Created</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @foreach($bidsList as $bid)
-                            <tr class="border-b">
-                                <td class="py-2 pr-4">{{ $bid->user?->name ?? '—' }}</td>
-                                <td class="py-2 pr-4">{{ number_format($bid->amount, 2) }}</td>
-                                <td class="py-2 pr-4">{{ $bid->created_at?->format('Y-m-d H:i') ?? '—' }}</td>
-                            </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
-                </div>
-                @endif
-            </div>
-
+            <form method="POST" action="{{ route('admin.lots.destroy', $lot) }}" onsubmit="return confirm('Archive this lot?');">
+                @csrf
+                @method('DELETE')
+                <button class="border rounded px-4 py-2">Archive</button>
+            </form>
         </div>
     </div>
-</x-app-layout>
+
+    @if (session('success'))
+        <div class="mb-4 text-sm text-green-700">{{ session('success') }}</div>
+    @endif
+
+    <div class="border rounded p-4 mb-6">
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+            <div><span class="text-gray-500">Year:</span> {{ $lot->year_produced }}</div>
+            <div><span class="text-gray-500">Subject:</span> {{ $lot->subject_classification }}</div>
+            <div><span class="text-gray-500">Status:</span> {{ $lot->status }}</div>
+            <div><span class="text-gray-500">Estimate:</span> £{{ number_format((float)$lot->estimate_low, 2) }}–£{{ number_format((float)$lot->estimate_high, 2) }}</div>
+            <div><span class="text-gray-500">Auction:</span> {{ $lot->auction?->title ?? 'Not assigned' }}</div>
+        </div>
+
+        <div class="mt-4">
+            <div class="text-gray-500 text-sm mb-1">Description</div>
+            <div class="text-sm whitespace-pre-wrap">{{ $lot->description }}</div>
+        </div>
+
+        <div class="mt-4">
+            <div class="text-gray-500 text-sm mb-1">Category metadata</div>
+            <pre class="text-xs bg-gray-50 border rounded p-3 overflow-auto">{{ json_encode($lot->category_metadata, JSON_PRETTY_PRINT) }}</pre>
+        </div>
+    </div>
+
+    <div class="border rounded p-4">
+        <h2 class="text-lg font-semibold mb-3">Commission bids</h2>
+
+        @if ($bids->isEmpty())
+            <p class="text-sm text-gray-600">No bids for this lot.</p>
+        @else
+            <div class="overflow-hidden border rounded">
+                <table class="w-full text-sm">
+                    <thead class="bg-gray-50">
+                        <tr class="text-left">
+                            <th class="p-3">Bidder</th>
+                            <th class="p-3">Max bid</th>
+                            <th class="p-3">Status</th>
+                            <th class="p-3">Placed</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($bids as $bid)
+                            <tr class="border-t">
+                                <td class="p-3">{{ $bid->user?->name ?? 'Unknown' }}</td>
+                                <td class="p-3">£{{ number_format((float)$bid->max_bid_amount, 2) }}</td>
+                                <td class="p-3">{{ $bid->status }}</td>
+                                <td class="p-3">{{ optional($bid->placed_at)->format('Y-m-d H:i') }}</td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        @endif
+    </div>
+</div>
+@endsection

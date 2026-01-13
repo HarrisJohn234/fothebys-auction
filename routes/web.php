@@ -5,7 +5,6 @@ use App\Http\Controllers\Admin\AuctionAdminController;
 use App\Http\Controllers\Admin\LotAdminController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\SaleAdminController;
-use App\Http\Controllers\Client\ClientBidController;
 use App\Http\Controllers\PublicCatalogueController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\ClientBidController;
