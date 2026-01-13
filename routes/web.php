@@ -8,6 +8,11 @@ use App\Http\Controllers\Admin\SaleAdminController;
 use App\Http\Controllers\Client\ClientBidController;
 use App\Http\Controllers\PublicCatalogueController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\ClientBidController;
+
+Route::post('/lots/{lot}/commission-bid', [ClientBidController::class, 'store'])
+    ->middleware('auth')
+    ->name('lots.commission-bid');
 
 Route::get('/', fn () => redirect()->route('public.catalogue'));
 Route::get('/dashboard', fn () => redirect()->route('public.catalogue'))

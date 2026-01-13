@@ -5,15 +5,19 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::table('users', function (Blueprint $table) {
-            $table->string('role')->default('admin')->index(); // admin | client
+            // Keep it simple for Sprint 1: admin/client only
+            $table->string('role', 20)->default('client')->after('email');
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('role');
         });
     }
 };
+

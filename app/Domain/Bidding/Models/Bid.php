@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Domain\Bids\Models;
+namespace App\Domain\Bidding\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
