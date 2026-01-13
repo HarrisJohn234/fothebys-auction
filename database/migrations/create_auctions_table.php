@@ -7,16 +7,13 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void {
         Schema::create('auctions', function (Blueprint $table) {
-            $table->id();
-            $table->string('title');
-            $table->string('theme')->nullable();
-            $table->string('auction_type')->default('PHYSICAL'); // PHYSICAL | ONLINE_ONLY
-            $table->timestamp('starts_at')->nullable();
-            $table->unsignedInteger('duration_minutes')->nullable();
-            $table->string('status')->default('DRAFT'); // DRAFT | SCHEDULED | LIVE | CLOSED | ARCHIVED
-            $table->foreignId('created_by')->constrained('users');
-            $table->timestamps();
-        });
+        $table->id();
+        $table->string('title');
+        $table->dateTime('starts_at')->nullable();
+        $table->dateTime('ends_at')->nullable();   
+        $table->string('status')->default('DRAFT');
+        $table->timestamps();
+    });
     }
 
     public function down(): void {
