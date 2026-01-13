@@ -4,9 +4,9 @@ namespace App\Domain\Bidding\Enums;
 
 enum BidStatus: string
 {
-    case ACTIVE = 'active';
-    case ACCEPTED = 'accepted';
-    case REJECTED = 'rejected';
-    case CANCELLED = 'cancelled';
-    case EXECUTED = 'executed';
+    case PENDING = 'PENDING';
+    case ACCEPTED = 'ACCEPTED';
+    case REJECTED = 'REJECTED';
+    case CANCELLED = 'CANCELLED';
+    case EXECUTED = 'EXECUTED';
 }

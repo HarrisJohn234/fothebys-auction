@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Application\Bids\Services\BidService;
-use App\Domain\Bids\Models\Bid;
+use App\Application\Bidding\Services\BidService;
+use App\Domain\Bidding\Models\Bid;
 
 class AdminBidController
 {
@@ -15,15 +15,17 @@ class AdminBidController
         return view('admin.bids.index', compact('bids'));
     }
 
-    public function accept(Bid $bid)
-    {
-        $this->bidService->accept($bid);
-        return redirect()->route('admin.bids.index');
-    }
+    public function accept(CommissionBid $bid): RedirectResponse
+{
+    $this->bidService->accept($bid);
+    return back()->with('success', 'Bid accepted.');
+}
 
-    public function reject(Bid $bid)
-    {
-        $this->bidService->reject($bid);
-        return redirect()->route('admin.bids.index');
-    }
+
+    public function reject(CommissionBid $bid): RedirectResponse
+{
+    $this->bidService->reject($bid);
+    return back()->with('failure', 'Bid rejected.');
+}
+
 }

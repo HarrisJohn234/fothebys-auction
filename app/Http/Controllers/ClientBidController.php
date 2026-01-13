@@ -19,9 +19,9 @@ class ClientBidController extends Controller
         $this->bidService->placeCommissionBid(
             $request->user(),
             $lot,
-            (float) $request->validated('max_bid_amount')
+            (int) $request->validated('max_bid_amount')
         );
 
-        return back()->with('success', 'Commission bid placed successfully.');
+        return back()->with('success', 'Commission bid submitted.');
     }
 }

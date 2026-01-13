@@ -74,8 +74,23 @@ class LotAdminController extends Controller
             'estimate_high' => ['required', 'numeric', 'gte:estimate_low'],
             'category_id' => ['required', 'exists:categories,id'],
             'status' => ['required', 'string', 'max:50'],
-            'category_metadata' => ['nullable', 'array'], // later: per-category rules
+            'category_metadata' => ['nullable', 'string'], // later: per-category rules
         ]);
+        $metaRaw = $data['category_metadata'] ?? null;
+
+        if (is_string($metaRaw) && trim($metaRaw) !== '') {
+            $decoded = json_decode($metaRaw, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()
+                    ->withErrors(['category_metadata' => 'Category metadata must be valid JSON.'])
+                    ->withInput();
+            }
+
+            $data['category_metadata'] = $decoded;
+        } else {
+            $data['category_metadata'] = [];
+        }
 
         $lot = $this->lotService->create($data);
 
@@ -91,9 +106,8 @@ class LotAdminController extends Controller
         $bids = CommissionBid::query()
             ->with('user')
             ->where('lot_id', $lot->id)
-            ->latest('placed_at')
+            ->latest() // uses created_at by default
             ->get();
-
         return view('admin.lots.show', compact('lot', 'bids'));
     }
 
@@ -116,8 +130,23 @@ class LotAdminController extends Controller
             'estimate_high' => ['required', 'numeric', 'gte:estimate_low'],
             'category_id' => ['required', 'exists:categories,id'],
             'status' => ['required', 'string', 'max:50'],
-            'category_metadata' => ['nullable', 'array'],
+            'category_metadata' => ['nullable', 'string'],
         ]);
+        $metaRaw = $data['category_metadata'] ?? null;
+
+        if (is_string($metaRaw) && trim($metaRaw) !== '') {
+            $decoded = json_decode($metaRaw, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                return back()
+                    ->withErrors(['category_metadata' => 'Category metadata must be valid JSON.'])
+                    ->withInput();
+            }
+
+            $data['category_metadata'] = $decoded;
+        } else {
+            $data['category_metadata'] = [];
+        }
 
         $this->lotService->update($lot, $data);
 

@@ -9,22 +9,23 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class CommissionBid extends Model
 {
+    protected $table = 'bids';
+
     protected $fillable = [
-        'user_id',
+        'client_id',
         'lot_id',
         'max_bid_amount',
         'status',
-        'placed_at',
     ];
 
     protected $casts = [
-        'max_bid_amount' => 'decimal:2',
-        'placed_at' => 'datetime',
+        'max_bid_amount' => 'integer',
     ];
 
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        // Keep the relation name `user()` for convenience in views/controllers
+        return $this->belongsTo(User::class, 'client_id');
     }
 
     public function lot(): BelongsTo

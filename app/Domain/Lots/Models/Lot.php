@@ -40,6 +40,6 @@ class Lot extends Model
 
     public function bids(): HasMany
     {
-        return $this->hasMany(\App\Domain\Bids\Models\Bid::class);
+        return $this->hasMany(\App\Domain\Bidding\Models\CommissionBid::class, 'lot_id');
     }
 }

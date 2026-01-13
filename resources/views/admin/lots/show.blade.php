@@ -65,7 +65,7 @@
                                 <td class="p-3">{{ $bid->user?->name ?? 'Unknown' }}</td>
                                 <td class="p-3">£{{ number_format((float)$bid->max_bid_amount, 2) }}</td>
                                 <td class="p-3">{{ $bid->status }}</td>
-                                <td class="p-3">{{ optional($bid->placed_at)->format('Y-m-d H:i') }}</td>
+                                <td class="p-3">{{ optional($bid->created_at)->format('Y-m-d H:i') }}</td>
                             </tr>
                         @endforeach
                     </tbody>

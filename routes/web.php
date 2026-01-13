@@ -21,12 +21,6 @@ Route::get('/dashboard', fn () => redirect()->route('public.catalogue'))
 Route::get('/catalogue', [PublicCatalogueController::class, 'index'])->name('public.catalogue');
 Route::get('/lots/{lot}', [PublicCatalogueController::class, 'show'])->name('public.lots.show');
 
-// Client commission bid (requires login; request ensures role=client)
-Route::middleware(['auth'])->group(function () {
-    Route::post('/lots/{lot}/commission-bid', [ClientBidController::class, 'store'])
-        ->name('client.bids.store');
-});
-
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('auctions', AuctionAdminController::class);
     Route::resource('lots', LotAdminController::class);
