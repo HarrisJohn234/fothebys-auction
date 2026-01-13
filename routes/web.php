@@ -10,6 +10,9 @@ use App\Http\Controllers\PublicCatalogueController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', fn () => redirect()->route('public.catalogue'));
+Route::get('/dashboard', fn () => redirect()->route('public.catalogue'))
+    ->middleware(['auth'])
+    ->name('dashboard');
 
 Route::get('/catalogue', [PublicCatalogueController::class, 'index'])->name('public.catalogue');
 Route::get('/lots/{lot}', [PublicCatalogueController::class, 'show'])->name('public.lots.show');
