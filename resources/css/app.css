@@ -1,3 +1,52 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+:root {
+    --fothebys-purple-light: #f3f0fa;
+    --fothebys-purple-main: #5b4b8a;
+    --fothebys-purple-dark: #3f335f;
+
+    --fothebys-gold: #c9a24d;
+    --fothebys-gold-soft: #e6d18a;
+}
+
+
+/* Brand components (keeps the UI consistent + easy to tweak later) */
+@layer components {
+  .bg-brand-page {
+    @apply bg-brand-cream text-brand-ink;
+  }
+
+  .card {
+    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
+  }
+
+  .card-pad {
+    @apply p-6;
+  }
+
+  .btn-primary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md
+           bg-brand-purple text-white font-semibold text-sm
+           hover:bg-brand-purpleDark
+           focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2
+           transition;
+  }
+
+  .btn-secondary {
+    @apply inline-flex items-center justify-center px-4 py-2 rounded-md
+           bg-white text-brand-purple border border-gray-300 font-semibold text-sm
+           hover:border-brand-purple hover:text-brand-purpleDark
+           focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2
+           transition;
+  }
+
+  .badge-gold {
+    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold
+           bg-brand-goldSoft text-brand-purple border border-brand-gold/40;
+  }
+
+  .link-brand {
+    @apply text-brand-purple hover:text-brand-purpleDark underline;
+  }
+}
