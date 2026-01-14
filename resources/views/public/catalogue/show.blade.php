@@ -15,12 +15,28 @@
         @endif
 
         <div class="border rounded p-4">
-            <div class="text-sm text-gray-500">{{ $lot->category->name }}</div>
-            <div class="font-semibold text-lg">{{ $lot->artist_name }} ({{ $lot->year_produced }})</div>
-            <div>Subject: {{ $lot->subject_classification }}</div>
-            <div class="mt-2">{{ $lot->description }}</div>
-            <div class="mt-2">
-                Estimate: £{{ $lot->estimate_low }}@if($lot->estimate_high)–£{{ $lot->estimate_high }}@endif
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="md:col-span-2">
+                    <div class="text-sm text-gray-500">{{ $lot->category->name }}</div>
+                    <div class="font-semibold text-lg">{{ $lot->artist_name }} ({{ $lot->year_produced }})</div>
+                    <div>Subject: {{ $lot->subject_classification }}</div>
+                    <div class="mt-2">{{ $lot->description }}</div>
+                    <div class="mt-2">
+                        Estimate: £{{ $lot->estimate_low }}@if($lot->estimate_high)–£{{ $lot->estimate_high }}@endif
+                    </div>
+                </div>
+
+                <div>
+                    <div class="w-full aspect-square border rounded bg-gray-50 overflow-hidden">
+                        @if($lot->image_url)
+                            <img src="{{ $lot->image_url }}" alt="Lot image" class="w-full h-full object-cover">
+                        @else
+                            <div class="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                                No image
+                            </div>
+                        @endif
+                    </div>
+                </div>
             </div>
 
             <div class="mt-4 text-sm text-gray-600">

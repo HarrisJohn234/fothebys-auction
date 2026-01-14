@@ -12,6 +12,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use App\Application\Auctions\Services\AuctionLifecycleService;
+use Illuminate\Support\Facades\Storage;
 
 class AuctionAdminController extends Controller
 {
@@ -40,7 +41,6 @@ class AuctionAdminController extends Controller
 
     public function create(): View
     {
-        // Only assign lots that are not archived and not already assigned (or allow reassign in edit)
         $lots = Lot::query()
             ->with('category')
             ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN'])
@@ -55,13 +55,18 @@ class AuctionAdminController extends Controller
     {
         $data = $request->validated();
 
-        DB::transaction(function () use ($data, &$auction) {
+        DB::transaction(function () use ($request, $data, &$auction) {
             $auction = Auction::create([
                 'title' => $data['title'],
                 'starts_at' => $data['starts_at'],
                 'ends_at' => $data['ends_at'],
                 'status' => $data['status'],
             ]);
+
+            if ($request->hasFile('image')) {
+                $path = $request->file('image')->store("auctions/{$auction->id}", 'public');
+                $auction->update(['image_path' => $path]);
+            }
 
             $lotIds = $data['lots'] ?? [];
             if (!empty($lotIds)) {
@@ -75,36 +80,29 @@ class AuctionAdminController extends Controller
     }
 
     public function show(Auction $auction): View
-{
-    $auction->load(['lots.category']);
+    {
+        $auction->load(['lots.category']);
 
-    // Only pull sales that belong to lots in THIS auction
-    // (prevents mismatches and guarantees $sales[$lot->id] works)
-    $sales = DB::table('sales')
-        ->join('lots', 'sales.lot_id', '=', 'lots.id')
-        ->leftJoin('users', 'sales.client_id', '=', 'users.id')
-        ->where('lots.auction_id', $auction->id)
-        ->select(
-            'sales.lot_id',
-            'sales.hammer_price',
-            'sales.status as sale_status',
-            'users.email as winning_client'
-        )
-        ->get()
-        ->keyBy('lot_id');
+        $sales = DB::table('sales')
+            ->join('lots', 'sales.lot_id', '=', 'lots.id')
+            ->leftJoin('users', 'sales.client_id', '=', 'users.id')
+            ->where('lots.auction_id', $auction->id)
+            ->select(
+                'sales.lot_id',
+                'sales.hammer_price',
+                'sales.status as sale_status',
+                'users.email as winning_client'
+            )
+            ->get()
+            ->keyBy('lot_id');
 
-    return view('admin.auctions.show', compact('auction', 'sales'));
-}
-
-
+        return view('admin.auctions.show', compact('auction', 'sales'));
+    }
 
     public function edit(Auction $auction): View
     {
         $auction->load('lots');
 
-        // Allow selecting:
-        // - currently assigned to this auction
-        // - unassigned lots
         $lots = Lot::query()
             ->with('category')
             ->whereNotIn('status', ['ARCHIVED', 'WITHDRAWN'])
@@ -124,7 +122,7 @@ class AuctionAdminController extends Controller
     {
         $data = $request->validated();
 
-        DB::transaction(function () use ($auction, $data) {
+        DB::transaction(function () use ($request, $auction, $data) {
             $auction->update([
                 'title' => $data['title'],
                 'starts_at' => $data['starts_at'],
@@ -132,14 +130,21 @@ class AuctionAdminController extends Controller
                 'status' => $data['status'],
             ]);
 
+            if ($request->hasFile('image')) {
+                if ($auction->image_path && Storage::disk('public')->exists($auction->image_path)) {
+                    Storage::disk('public')->delete($auction->image_path);
+                }
+
+                $path = $request->file('image')->store("auctions/{$auction->id}", 'public');
+                $auction->update(['image_path' => $path]);
+            }
+
             $newLotIds = $data['lots'] ?? [];
 
-            // Unassign lots no longer selected
             Lot::where('auction_id', $auction->id)
                 ->whereNotIn('id', $newLotIds)
                 ->update(['auction_id' => null]);
 
-            // Assign selected lots to this auction
             if (!empty($newLotIds)) {
                 Lot::whereIn('id', $newLotIds)->update(['auction_id' => $auction->id]);
             }
@@ -149,13 +154,13 @@ class AuctionAdminController extends Controller
             ->route('admin.auctions.index')
             ->with('success', 'Auction updated successfully.');
     }
+
     public function close(Auction $auction, AuctionLifecycleService $lifecycle): RedirectResponse
     {
         if ($auction->status !== 'LIVE') {
             return back()->with('success', 'Auction is not LIVE.');
         }
 
-        // Manual close ALWAYS closes this auction + generates sales
         $lifecycle->closeAuction($auction);
 
         return redirect()
@@ -163,10 +168,8 @@ class AuctionAdminController extends Controller
             ->with('success', 'Auction closed and sales generated.');
     }
 
-
     public function destroy(Auction $auction): RedirectResponse
     {
-        // Sprint-friendly: “delete” means unassign lots then remove auction
         DB::transaction(function () use ($auction) {
             Lot::where('auction_id', $auction->id)->update(['auction_id' => null]);
             $auction->delete();

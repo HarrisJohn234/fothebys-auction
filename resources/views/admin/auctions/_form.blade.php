@@ -31,6 +31,12 @@
         <input type="datetime-local" name="ends_at" class="w-full border rounded p-2"
                value="{{ old('ends_at', isset($auction) && $auction->ends_at ? $auction->ends_at->format('Y-m-d\TH:i') : '') }}" required>
     </div>
+
+    <div class="md:col-span-2">
+        <label class="block text-sm mb-1">Auction image (optional)</label>
+        <input type="file" name="image" accept="image/*" class="w-full border rounded p-2">
+        <p class="text-xs text-gray-500 mt-1">Shown on public pages later + admin show page only.</p>
+    </div>
 </div>
 
 <div class="mt-6">

@@ -5,6 +5,7 @@ namespace App\Domain\Lots\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 
 class Lot extends Model
 {
@@ -20,6 +21,7 @@ class Lot extends Model
         'category_id',
         'category_metadata',
         'auction_id',
+        'image_path',
         'status',
     ];
 
@@ -27,6 +29,18 @@ class Lot extends Model
         'category_metadata' => 'array',
         'auction_date' => 'date',
     ];
+
+    protected $appends = [
+        'image_url',
+    ];
+
+    public function getImageUrlAttribute(): ?string
+    {
+        if (!$this->image_path) {
+            return null;
+        }
+        return Storage::disk('public')->url($this->image_path);
+    }
 
     public function category(): BelongsTo
     {

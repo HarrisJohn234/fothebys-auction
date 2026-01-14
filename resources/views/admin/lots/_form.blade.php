@@ -54,6 +54,12 @@
         <input name="status" value="{{ old('status', $lot->status ?? 'PENDING') }}" class="w-full border rounded p-2" required>
         <p class="text-xs text-gray-500 mt-1">Example: PENDING, IN_AUCTION, SOLD, WITHDRAWN, ARCHIVED</p>
     </div>
+
+    <div>
+        <label class="block text-sm mb-1">Lot image (optional)</label>
+        <input type="file" name="image" accept="image/*" class="w-full border rounded p-2">
+        <p class="text-xs text-gray-500 mt-1">Shown on public catalogue + lot page. Not shown on admin index.</p>
+    </div>
 </div>
 
 <div class="mt-4">
@@ -61,7 +67,6 @@
     <textarea name="description" rows="5" class="w-full border rounded p-2" required>{{ old('description', $lot->description ?? '') }}</textarea>
 </div>
 
-{{-- Category metadata placeholder (Sprint 1: free-form JSON via textarea) --}}
 <div class="mt-4">
     <label class="block text-sm mb-1">Category metadata (JSON)</label>
     <textarea name="category_metadata" rows="5" class="w-full border rounded p-2"

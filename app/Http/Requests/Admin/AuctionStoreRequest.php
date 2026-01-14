@@ -13,7 +13,6 @@ class AuctionStoreRequest extends FormRequest
 
     protected function prepareForValidation(): void
     {
-        // Trim status/title just to prevent whitespace bugs
         if ($this->has('title')) {
             $this->merge(['title' => trim((string) $this->input('title'))]);
         }
@@ -33,6 +32,9 @@ class AuctionStoreRequest extends FormRequest
             // lots[] are optional; used for assignment
             'lots' => ['nullable', 'array'],
             'lots.*' => ['integer', 'exists:lots,id'],
+
+            // NEW: optional auction image
+            'image' => ['nullable', 'image', 'max:5120'], // up to 5MB
         ];
     }
 }

@@ -24,17 +24,34 @@
     @endif
 
     <div class="border rounded p-4 mb-6">
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-            <div><span class="text-gray-500">Year:</span> {{ $lot->year_produced }}</div>
-            <div><span class="text-gray-500">Subject:</span> {{ $lot->subject_classification }}</div>
-            <div><span class="text-gray-500">Status:</span> {{ $lot->status }}</div>
-            <div><span class="text-gray-500">Estimate:</span> £{{ number_format((float)$lot->estimate_low, 2) }}–£{{ number_format((float)$lot->estimate_high, 2) }}</div>
-            <div><span class="text-gray-500">Auction:</span> {{ $lot->auction?->title ?? 'Not assigned' }}</div>
-        </div>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div class="md:col-span-2">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
+                    <div><span class="text-gray-500">Year:</span> {{ $lot->year_produced }}</div>
+                    <div><span class="text-gray-500">Subject:</span> {{ $lot->subject_classification }}</div>
+                    <div><span class="text-gray-500">Status:</span> {{ $lot->status }}</div>
+                    <div><span class="text-gray-500">Estimate:</span> £{{ number_format((float)$lot->estimate_low, 2) }}–£{{ number_format((float)$lot->estimate_high, 2) }}</div>
+                    <div><span class="text-gray-500">Auction:</span> {{ $lot->auction?->title ?? 'Not assigned' }}</div>
+                </div>
 
-        <div class="mt-4">
-            <div class="text-gray-500 text-sm mb-1">Description</div>
-            <div class="text-sm whitespace-pre-wrap">{{ $lot->description }}</div>
+                <div class="mt-4">
+                    <div class="text-gray-500 text-sm mb-1">Description</div>
+                    <div class="text-sm whitespace-pre-wrap">{{ $lot->description }}</div>
+                </div>
+            </div>
+
+            <div>
+                <div class="text-gray-500 text-sm mb-2">Lot image</div>
+                <div class="w-full aspect-square border rounded bg-gray-50 overflow-hidden">
+                    @if($lot->image_url)
+                        <img src="{{ $lot->image_url }}" alt="Lot image" class="w-full h-full object-cover">
+                    @else
+                        <div class="w-full h-full flex items-center justify-center text-xs text-gray-400">
+                            No image
+                        </div>
+                    @endif
+                </div>
+            </div>
         </div>
 
         <div class="mt-4">

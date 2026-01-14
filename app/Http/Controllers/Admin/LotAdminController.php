@@ -12,6 +12,8 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use App\Http\Requests\Admin\LotStoreRequest;
 use App\Http\Requests\Admin\LotUpdateRequest;
+use Illuminate\Support\Facades\Storage;
+
 class LotAdminController extends Controller
 {
     public function __construct(private readonly LotService $lotService)
@@ -52,7 +54,6 @@ class LotAdminController extends Controller
         }
 
         $lots = $query->paginate(15)->withQueryString();
-
         $categories = Category::query()->orderBy('name')->get();
 
         return view('admin.lots.index', compact('lots', 'categories'));
@@ -66,13 +67,19 @@ class LotAdminController extends Controller
 
     public function store(LotStoreRequest $request): RedirectResponse
     {
-    $data = $request->validated();
+        $data = $request->validated();
+        unset($data['image']);
 
-    $this->lotService->create($data);
+        $lot = $this->lotService->create($data);
 
-    return redirect()
-        ->route('admin.lots.index')
-        ->with('success', 'Lot created successfully.');
+        if ($request->hasFile('image')) {
+            $path = $request->file('image')->store("lots/{$lot->lot_number}", 'public');
+            $lot->update(['image_path' => $path]);
+        }
+
+        return redirect()
+            ->route('admin.lots.index')
+            ->with('success', 'Lot created successfully.');
     }
 
     public function show(Lot $lot): View
@@ -82,8 +89,9 @@ class LotAdminController extends Controller
         $bids = CommissionBid::query()
             ->with('user')
             ->where('lot_id', $lot->id)
-            ->latest() // uses created_at by default
+            ->latest()
             ->get();
+
         return view('admin.lots.show', compact('lot', 'bids'));
     }
 
@@ -97,13 +105,23 @@ class LotAdminController extends Controller
 
     public function update(LotUpdateRequest $request, Lot $lot): RedirectResponse
     {
-    $data = $request->validated();
+        $data = $request->validated();
+        unset($data['image']);
 
-    $this->lotService->update($lot, $data);
+        $this->lotService->update($lot, $data);
 
-    return redirect()
-        ->route('admin.lots.index')
-        ->with('success', 'Lot updated successfully.');
+        if ($request->hasFile('image')) {
+            if ($lot->image_path && Storage::disk('public')->exists($lot->image_path)) {
+                Storage::disk('public')->delete($lot->image_path);
+            }
+
+            $path = $request->file('image')->store("lots/{$lot->lot_number}", 'public');
+            $lot->update(['image_path' => $path]);
+        }
+
+        return redirect()
+            ->route('admin.lots.index')
+            ->with('success', 'Lot updated successfully.');
     }
 
     public function destroy(Lot $lot): RedirectResponse
