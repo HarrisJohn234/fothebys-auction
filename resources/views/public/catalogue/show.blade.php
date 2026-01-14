@@ -1,7 +1,5 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl">Lot #{{ $lot->lot_number }}</h2>
-    </x-slot>
+    
 
     <div class="p-6 space-y-4">
         @if (session('success'))
@@ -13,7 +11,7 @@
                 {{ $errors->first() }}
             </div>
         @endif
-
+        <h2 class="font-semibold text-xl">Lot #{{ $lot->lot_number }}</h2>
         <div class="border rounded p-4">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <div class="md:col-span-2">
