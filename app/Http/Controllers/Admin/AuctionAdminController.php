@@ -132,22 +132,20 @@ class AuctionAdminController extends Controller
             ->route('admin.auctions.index')
             ->with('success', 'Auction updated successfully.');
     }
-    public function close(Auction $auction, AuctionLifecycleService $lifecycle): \Illuminate\Http\RedirectResponse
+    public function close(Auction $auction, AuctionLifecycleService $lifecycle): RedirectResponse
     {
-        // Close only this auction if it's LIVE and ended, or allow manual close.
         if ($auction->status !== 'LIVE') {
             return back()->with('success', 'Auction is not LIVE.');
         }
 
-        // Force ends_at to now for manual close if you want:
-        // $auction->update(['ends_at' => now()]);
-
-        $lifecycle->closeEndedAuctions();
+        // Manual close ALWAYS closes this auction + generates sales
+        $lifecycle->closeAuction($auction);
 
         return redirect()
             ->route('admin.auctions.show', $auction)
-            ->with('success', 'Auction close processed (sales generated where applicable).');
+            ->with('success', 'Auction closed and sales generated.');
     }
+
 
     public function destroy(Auction $auction): RedirectResponse
     {

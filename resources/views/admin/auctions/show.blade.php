@@ -9,9 +9,10 @@
             Auction: {{ $auction->title }}
         </h1>
 
-        <a href="{{ route('admin.auctions.index') }}" class="underline">
-            Back to auctions
-        </a>
+        <div class="flex items-center gap-4">
+            <a href="{{ route('admin.sales.index') }}" class="underline">Sales</a>
+            <a href="{{ route('admin.auctions.index') }}" class="underline">Back to auctions</a>
+        </div>
     </div>
 
     {{-- Status + timing --}}
@@ -24,21 +25,17 @@
 
             <div>
                 <div class="text-gray-500">Starts at</div>
-                <div>
-                    {{ $auction->starts_at?->format('Y-m-d H:i') ?? '—' }}
-                </div>
+                <div>{{ $auction->starts_at?->format('Y-m-d H:i') ?? '—' }}</div>
             </div>
 
             <div>
                 <div class="text-gray-500">Ends at</div>
-                <div>
-                    {{ $auction->ends_at?->format('Y-m-d H:i') ?? '—' }}
-                </div>
+                <div>{{ $auction->ends_at?->format('Y-m-d H:i') ?? '—' }}</div>
             </div>
         </div>
     </div>
 
-    {{-- Success message --}}
+    {{-- Flash --}}
     @if(session('success'))
         <div class="border border-green-200 bg-green-50 text-green-800 p-3 rounded text-sm">
             {{ session('success') }}
@@ -47,8 +44,7 @@
 
     {{-- Actions --}}
     <div class="flex gap-3">
-        <a href="{{ route('admin.auctions.edit', $auction) }}"
-           class="border rounded px-4 py-2">
+        <a href="{{ route('admin.auctions.edit', $auction) }}" class="border rounded px-4 py-2">
             Edit auction
         </a>
 
@@ -66,7 +62,7 @@
         @endif
     </div>
 
-    {{-- Lots in this auction --}}
+    {{-- Lots --}}
     <div class="border rounded overflow-hidden">
         <table class="w-full text-sm">
             <thead class="bg-gray-50">
@@ -81,24 +77,14 @@
             <tbody>
                 @forelse($auction->lots as $lot)
                     <tr class="border-t">
-                        <td class="p-3 font-mono">
-                            {{ $lot->lot_number }}
-                        </td>
-                        <td class="p-3">
-                            {{ $lot->artist_name }}
-                        </td>
-                        <td class="p-3">
-                            {{ $lot->category?->name ?? '—' }}
-                        </td>
+                        <td class="p-3 font-mono">{{ $lot->lot_number }}</td>
+                        <td class="p-3">{{ $lot->artist_name }}</td>
+                        <td class="p-3">{{ $lot->category?->name ?? '—' }}</td>
                         <td class="p-3 text-right">
                             £{{ number_format($lot->estimate_low) }}
-                            @if($lot->estimate_high)
-                                –£{{ number_format($lot->estimate_high) }}
-                            @endif
+                            @if($lot->estimate_high) –£{{ number_format($lot->estimate_high) }} @endif
                         </td>
-                        <td class="p-3">
-                            {{ $lot->status }}
-                        </td>
+                        <td class="p-3">{{ $lot->status }}</td>
                     </tr>
                 @empty
                     <tr>
