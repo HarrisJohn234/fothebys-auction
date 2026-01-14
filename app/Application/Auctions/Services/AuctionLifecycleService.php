@@ -9,24 +9,21 @@ use Illuminate\Support\Facades\DB;
 class AuctionLifecycleService
 {
     /**
-     * Close one specific auction and generate sales.
-     * Idempotent: safe to call multiple times (won't duplicate sales).
+     * Manual close: closes this auction and generates sales.
+     * Idempotent: safe to click multiple times; it will not create duplicates.
      */
     public function closeAuction(Auction $auction): void
     {
         DB::transaction(function () use ($auction) {
-            // Always re-fetch inside transaction (fresh data)
             $auction->refresh();
 
-            // If already closed, do nothing
             if ($auction->status === 'CLOSED') {
                 return;
             }
 
-            // Force status to CLOSED (manual close)
             $auction->update([
                 'status' => 'CLOSED',
-                'ends_at' => $auction->ends_at ?? now(), // ensure ends_at exists for reporting
+                'ends_at' => $auction->ends_at ?? now(),
             ]);
 
             $lots = Lot::query()
@@ -41,18 +38,12 @@ class AuctionLifecycleService
                     ->first();
 
                 if (!$topBid) {
-                    // UNSOLD sale (one per lot)
-                    DB::table('sales')->updateOrInsert(
-                        ['lot_id' => $lot->id],
-                        [
-                            'client_id' => null,
-                            'hammer_price' => null,
-                            'commission_amount' => 0,
-                            'status' => 'UNSOLD',
-                            'updated_at' => now(),
-                            // only set created_at if it doesn't exist yet
-                            'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-                        ]
+                    $this->upsertSale(
+                        lotId: $lot->id,
+                        clientId: null,
+                        hammerPrice: null,
+                        commissionAmount: 0,
+                        status: 'UNSOLD'
                     );
 
                     $lot->update(['status' => 'UNSOLD']);
@@ -62,21 +53,16 @@ class AuctionLifecycleService
                 $hammer = (float) $topBid->max_bid_amount;
                 $commission = round($hammer * 0.10, 2);
 
-                DB::table('sales')->updateOrInsert(
-                    ['lot_id' => $lot->id],
-                    [
-                        'client_id' => $topBid->client_id,
-                        'hammer_price' => $hammer,
-                        'commission_amount' => $commission,
-                        'status' => 'COMPLETED',
-                        'updated_at' => now(),
-                        'created_at' => DB::raw('COALESCE(created_at, CURRENT_TIMESTAMP)'),
-                    ]
+                $this->upsertSale(
+                    lotId: $lot->id,
+                    clientId: $topBid->client_id,
+                    hammerPrice: $hammer,
+                    commissionAmount: $commission,
+                    status: 'COMPLETED'
                 );
 
                 $lot->update(['status' => 'SOLD']);
 
-                // Mark bids
                 DB::table('bids')->where('lot_id', $lot->id)->update(['status' => 'LOST']);
                 DB::table('bids')->where('id', $topBid->id)->update(['status' => 'WON']);
             }
@@ -84,7 +70,7 @@ class AuctionLifecycleService
     }
 
     /**
-     * Close any LIVE auctions that have ended (scheduled behaviour).
+     * Scheduled close: closes any LIVE auctions that have ended.
      */
     public function closeEndedAuctions(): int
     {
@@ -94,14 +80,44 @@ class AuctionLifecycleService
             ->where('ends_at', '<=', now())
             ->get();
 
-        if ($auctions->isEmpty()) {
-            return 0;
-        }
-
         foreach ($auctions as $auction) {
             $this->closeAuction($auction);
         }
 
         return $auctions->count();
+    }
+
+    /**
+     * Insert if missing; update if exists. No COALESCE.
+     */
+    private function upsertSale(
+        int $lotId,
+        ?int $clientId,
+        ?float $hammerPrice,
+        float $commissionAmount,
+        string $status
+    ): void {
+        $exists = DB::table('sales')->where('lot_id', $lotId)->exists();
+
+        if ($exists) {
+            DB::table('sales')->where('lot_id', $lotId)->update([
+                'client_id' => $clientId,
+                'hammer_price' => $hammerPrice,
+                'commission_amount' => $commissionAmount,
+                'status' => $status,
+                'updated_at' => now(),
+            ]);
+            return;
+        }
+
+        DB::table('sales')->insert([
+            'lot_id' => $lotId,
+            'client_id' => $clientId,
+            'hammer_price' => $hammerPrice,
+            'commission_amount' => $commissionAmount,
+            'status' => $status,
+            'created_at' => now(),
+            'updated_at' => now(),
+        ]);
     }
 }
