@@ -5,7 +5,6 @@ namespace App\Domain\Lots\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Lot extends Model
 {
@@ -34,12 +33,17 @@ class Lot extends Model
         'image_url',
     ];
 
+    /**
+     * IMPORTANT: return a relative URL to avoid mixed-content issues
+     * when APP_URL is http but the site is served over https (common with Herd).
+     */
     public function getImageUrlAttribute(): ?string
     {
         if (!$this->image_path) {
             return null;
         }
-        return Storage::disk('public')->url($this->image_path);
+
+        return '/storage/' . ltrim($this->image_path, '/');
     }
 
     public function category(): BelongsTo

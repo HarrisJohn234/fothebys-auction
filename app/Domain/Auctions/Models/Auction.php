@@ -5,7 +5,6 @@ namespace App\Domain\Auctions\Models;
 use App\Domain\Lots\Models\Lot;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Support\Facades\Storage;
 
 class Auction extends Model
 {
@@ -26,12 +25,16 @@ class Auction extends Model
         'image_url',
     ];
 
+    /**
+     * IMPORTANT: return a relative URL to avoid mixed-content issues.
+     */
     public function getImageUrlAttribute(): ?string
     {
         if (!$this->image_path) {
             return null;
         }
-        return Storage::disk('public')->url($this->image_path);
+
+        return '/storage/' . ltrim($this->image_path, '/');
     }
 
     public function lots(): HasMany
