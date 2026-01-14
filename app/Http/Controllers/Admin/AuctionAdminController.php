@@ -171,12 +171,16 @@ class AuctionAdminController extends Controller
     public function destroy(Auction $auction): RedirectResponse
     {
         DB::transaction(function () use ($auction) {
+            // Detach lots but keep them in the system
             Lot::where('auction_id', $auction->id)->update(['auction_id' => null]);
-            $auction->delete();
+
+            // Logical archive instead of physical delete
+            $auction->update(['status' => 'ARCHIVED']);
         });
 
         return redirect()
             ->route('admin.auctions.index')
-            ->with('success', 'Auction deleted successfully.');
+            ->with('success', 'Auction archived successfully.');
     }
+
 }
