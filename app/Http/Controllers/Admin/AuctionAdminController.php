@@ -11,6 +11,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use App\Application\Auctions\Services\AuctionLifecycleService;
 
 class AuctionAdminController extends Controller
 {
@@ -130,6 +131,22 @@ class AuctionAdminController extends Controller
         return redirect()
             ->route('admin.auctions.index')
             ->with('success', 'Auction updated successfully.');
+    }
+    public function close(Auction $auction, AuctionLifecycleService $lifecycle): \Illuminate\Http\RedirectResponse
+    {
+        // Close only this auction if it's LIVE and ended, or allow manual close.
+        if ($auction->status !== 'LIVE') {
+            return back()->with('success', 'Auction is not LIVE.');
+        }
+
+        // Force ends_at to now for manual close if you want:
+        // $auction->update(['ends_at' => now()]);
+
+        $lifecycle->closeEndedAuctions();
+
+        return redirect()
+            ->route('admin.auctions.show', $auction)
+            ->with('success', 'Auction close processed (sales generated where applicable).');
     }
 
     public function destroy(Auction $auction): RedirectResponse

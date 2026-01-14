@@ -2,27 +2,31 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Application\Sales\Services\SaleService;
-use App\Domain\Lots\Models\Lot;
-use App\Http\Requests\Admin\SaleStoreRequest;
-use App\Models\User;
+use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\DB;
+use Illuminate\View\View;
 
-class SaleAdminController
+class SaleAdminController extends Controller
 {
-    public function __construct(private SaleService $saleService) {}
-
-    public function create(Lot $lot)
+    public function __construct()
     {
-        $buyers = User::query()->where('role', 'client')->orderBy('name')->get();
-        return view('admin.sales.create', compact('lot', 'buyers'));
+        $this->middleware(['auth', 'admin']);
     }
 
-    public function store(SaleStoreRequest $request, Lot $lot)
+    public function index(): View
     {
-        $data = $request->validated();
-        $sale = $this->saleService->recordSale($lot, (int) $data['buyer_id'], (int) $data['hammer_price']);
+        $sales = DB::table('sales')
+            ->join('lots', 'sales.lot_id', '=', 'lots.id')
+            ->leftJoin('users', 'sales.client_id', '=', 'users.id')
+            ->select(
+                'sales.*',
+                'lots.lot_number',
+                'lots.artist_name',
+                'users.email as client_email'
+            )
+            ->orderByDesc('sales.id')
+            ->paginate(20);
 
-        return redirect()->route('admin.lots.show', $lot)
-            ->with('status', "Sale recorded. Total due: {$sale->total_due}");
+        return view('admin.sales.index', compact('sales'));
     }
 }

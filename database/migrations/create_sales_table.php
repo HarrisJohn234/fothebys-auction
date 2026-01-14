@@ -5,25 +5,30 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration {
-    public function up(): void {
+    public function up(): void
+    {
         Schema::create('sales', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('lot_id')->constrained('lots')->unique();
-            $table->foreignId('buyer_id')->constrained('users');
 
-            $table->unsignedInteger('hammer_price');
+            // One sale per lot
+            $table->foreignId('lot_id')->constrained()->cascadeOnDelete()->unique();
 
-            // store applied rate for audit/traceability
-            $table->decimal('buyer_premium_rate', 5, 4); // e.g. 0.1500
-            $table->unsignedInteger('buyer_premium_amount');
-            $table->unsignedInteger('total_due');
+            // Winning client (nullable if UNSOLD)
+            $table->foreignId('client_id')->nullable()->constrained('users')->nullOnDelete();
 
-            $table->timestamp('sold_at')->nullable();
+            // Prices/commission
+            $table->decimal('hammer_price', 10, 2)->nullable();
+            $table->decimal('commission_amount', 10, 2)->default(0);
+
+            // Status: COMPLETED / UNSOLD (simple for sprint)
+            $table->string('status')->default('COMPLETED');
+
             $table->timestamps();
         });
     }
 
-    public function down(): void {
+    public function down(): void
+    {
         Schema::dropIfExists('sales');
     }
 };
