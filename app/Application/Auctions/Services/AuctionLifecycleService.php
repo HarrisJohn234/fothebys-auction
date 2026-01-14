@@ -51,7 +51,8 @@ class AuctionLifecycleService
                 }
 
                 $hammer = (float) $topBid->max_bid_amount;
-                $commission = round($hammer * 0.10, 2);
+                $commissionRate = (float) config('fees.commission_rate', 0.10);
+                $commission = round($hammer * $commissionRate, 2);
 
                 $this->upsertSale(
                     lotId: $lot->id,
@@ -89,6 +90,8 @@ class AuctionLifecycleService
 
     /**
      * Insert if missing; update if exists. No COALESCE.
+     *
+     * NOTE: Requires created_at/updated_at columns on sales table.
      */
     private function upsertSale(
         int $lotId,

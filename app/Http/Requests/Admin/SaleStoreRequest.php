@@ -14,8 +14,8 @@ class SaleStoreRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'buyer_id' => ['required','exists:users,id'],
-            'hammer_price' => ['required','integer','min:1'],
+            'client_id' => ['required', 'exists:users,id'],
+            'hammer_price' => ['required', 'numeric', 'min:1'],
         ];
     }
 }

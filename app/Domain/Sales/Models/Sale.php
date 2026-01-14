@@ -7,19 +7,26 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Sale extends Model
 {
+    /**
+     * Commission-bid demo scope.
+     *
+     * The sales table is a simple, sprint-friendly ledger created when an auction closes:
+     * - One sale row per lot (unique lot_id)
+     * - client_id can be NULL when a lot is UNSOLD
+     * - hammer_price is the winning commission bid amount (nullable when UNSOLD)
+     * - commission_amount is the auction house commission taken from the hammer price
+     */
     protected $fillable = [
         'lot_id',
-        'buyer_id',
+        'client_id',
         'hammer_price',
-        'buyer_premium_rate',
-        'buyer_premium_amount',
-        'total_due',
-        'sold_at',
+        'commission_amount',
+        'status', // COMPLETED | UNSOLD
     ];
 
     protected $casts = [
-        'sold_at' => 'datetime',
-        'buyer_premium_rate' => 'decimal:4',
+        'hammer_price' => 'decimal:2',
+        'commission_amount' => 'decimal:2',
     ];
 
     public function lot(): BelongsTo
@@ -27,8 +34,8 @@ class Sale extends Model
         return $this->belongsTo(\App\Domain\Lots\Models\Lot::class);
     }
 
-    public function buyer(): BelongsTo
+    public function client(): BelongsTo
     {
-        return $this->belongsTo(\App\Models\User::class, 'buyer_id');
+        return $this->belongsTo(\App\Models\User::class, 'client_id');
     }
 }

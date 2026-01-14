@@ -17,10 +17,10 @@
             @csrf
 
             <div>
-                <label class="block text-sm">Buyer</label>
-                <select class="border rounded p-2 w-full" name="buyer_id">
-                    @foreach($buyers as $b)
-                        <option value="{{ $b->id }}">{{ $b->name }} ({{ $b->email }})</option>
+                <label class="block text-sm">Client (winning commission bidder)</label>
+                <select class="border rounded p-2 w-full" name="client_id">
+                    @foreach($clients as $c)
+                        <option value="{{ $c->id }}">{{ $c->name }} ({{ $c->email }})</option>
                     @endforeach
                 </select>
             </div>
@@ -28,6 +28,9 @@
             <div>
                 <label class="block text-sm">Hammer price (£)</label>
                 <input class="border rounded p-2 w-full" name="hammer_price" value="{{ old('hammer_price') }}" />
+                <div class="text-xs text-gray-500 mt-1">
+                    Commission will be calculated automatically using config('fees.commission_rate').
+                </div>
             </div>
 
             <button class="bg-black text-white rounded px-4 py-2">Record Sale</button>

@@ -3,20 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Domain\Sales\Models\Sale;
+use Illuminate\View\View;
 
 class ReportAdminController
 {
-    public function salesSummary()
+    public function salesSummary(): View
     {
         $rows = Sale::query()
-            ->with('lot.auction')
+            ->with('lot.auction', 'client')
             ->latest()
             ->paginate(25);
 
-        $totalHammer = (int) Sale::sum('hammer_price');
-        $totalPremium = (int) Sale::sum('buyer_premium_amount');
-        $totalDue = (int) Sale::sum('total_due');
+        $totalHammer = (float) Sale::sum('hammer_price');
+        $totalCommission = (float) Sale::sum('commission_amount');
 
-        return view('admin.reports.sales', compact('rows', 'totalHammer', 'totalPremium', 'totalDue'));
+        return view('admin.reports.sales', compact('rows', 'totalHammer', 'totalCommission'));
     }
 }
