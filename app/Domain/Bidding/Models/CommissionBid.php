@@ -28,6 +28,12 @@ class CommissionBid extends Model
         return $this->belongsTo(User::class, 'client_id');
     }
 
+    public function client(): BelongsTo
+    {
+        // Alias for admin UI which expects $bid->client
+        return $this->belongsTo(User::class, 'client_id');
+    }
+
     public function lot(): BelongsTo
     {
         return $this->belongsTo(Lot::class);

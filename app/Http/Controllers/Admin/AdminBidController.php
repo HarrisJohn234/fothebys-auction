@@ -3,7 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Application\Bidding\Services\BidService;
-use App\Domain\Bidding\Models\Bid;
+use App\Domain\Bidding\Models\CommissionBid;
+use Illuminate\Http\RedirectResponse;
 
 class AdminBidController
 {
@@ -11,21 +12,23 @@ class AdminBidController
 
     public function index()
     {
-        $bids = Bid::query()->with(['lot','client'])->latest()->paginate(20);
+        $bids = CommissionBid::query()
+            ->with(['lot', 'client'])
+            ->latest()
+            ->paginate(20);
+
         return view('admin.bids.index', compact('bids'));
     }
 
     public function accept(CommissionBid $bid): RedirectResponse
-{
-    $this->bidService->accept($bid);
-    return back()->with('success', 'Bid accepted.');
-}
-
+    {
+        $this->bidService->accept($bid);
+        return back()->with('success', 'Bid accepted.');
+    }
 
     public function reject(CommissionBid $bid): RedirectResponse
-{
-    $this->bidService->reject($bid);
-    return back()->with('failure', 'Bid rejected.');
-}
-
+    {
+        $this->bidService->reject($bid);
+        return back()->with('failure', 'Bid rejected.');
+    }
 }
