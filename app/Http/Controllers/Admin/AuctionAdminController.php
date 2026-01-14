@@ -78,8 +78,21 @@ class AuctionAdminController extends Controller
     {
         $auction->load(['lots.category']);
 
-        return view('admin.auctions.show', compact('auction'));
+        // Attach sale + winning client info per lot
+        $sales = \Illuminate\Support\Facades\DB::table('sales')
+            ->leftJoin('users', 'sales.client_id', '=', 'users.id')
+            ->select(
+                'sales.lot_id',
+                'sales.hammer_price',
+                'sales.status as sale_status',
+                'users.email as winning_client'
+            )
+            ->get()
+            ->keyBy('lot_id');
+
+        return view('admin.auctions.show', compact('auction', 'sales'));
     }
+
 
     public function edit(Auction $auction): View
     {

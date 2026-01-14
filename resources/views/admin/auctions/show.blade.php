@@ -72,10 +72,16 @@
                     <th class="p-3 text-left">Category</th>
                     <th class="p-3 text-right">Estimate</th>
                     <th class="p-3 text-left">Status</th>
+                    <th class="p-3 text-left">Result</th>
+                    <th class="p-3 text-right">Hammer</th>
                 </tr>
             </thead>
             <tbody>
                 @forelse($auction->lots as $lot)
+                    @php
+                        $sale = $sales[$lot->id] ?? null;
+                    @endphp
+
                     <tr class="border-t">
                         <td class="p-3 font-mono">{{ $lot->lot_number }}</td>
                         <td class="p-3">{{ $lot->artist_name }}</td>
@@ -84,9 +90,34 @@
                             £{{ number_format($lot->estimate_low) }}
                             @if($lot->estimate_high) –£{{ number_format($lot->estimate_high) }} @endif
                         </td>
-                        <td class="p-3">{{ $lot->status }}</td>
+                        <td class="p-3">
+                            {{ $lot->status }}
+                        </td>
+
+                        {{-- Result --}}
+                        <td class="p-3">
+                            @if($sale && $sale->sale_status === 'COMPLETED')
+                                <span class="text-green-700">
+                                    Sold to {{ $sale->winning_client }}
+                                </span>
+                            @elseif($sale && $sale->sale_status === 'UNSOLD')
+                                <span class="text-gray-500">Unsold</span>
+                            @else
+                                —
+                            @endif
+                        </td>
+
+                        {{-- Hammer --}}
+                        <td class="p-3 text-right">
+                            @if($sale && $sale->hammer_price)
+                                £{{ number_format($sale->hammer_price, 2) }}
+                            @else
+                                —
+                            @endif
+                        </td>
                     </tr>
                 @empty
+
                     <tr>
                         <td class="p-3 text-center text-gray-500" colspan="5">
                             No lots assigned to this auction.
