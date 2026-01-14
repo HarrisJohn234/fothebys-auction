@@ -20,6 +20,10 @@
                                 {{ __('Auctions') }}
                             </x-nav-link>
 
+                            <x-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                                {{ __('Categories') }}
+                            </x-nav-link>
+
                             <x-nav-link :href="route('admin.sales.index')" :active="request()->routeIs('admin.sales.*')">
                                 {{ __('Sales') }}
                             </x-nav-link>
@@ -38,6 +42,14 @@
 
                             <x-nav-link :href="route('public.catalogue')" :active="request()->routeIs('public.catalogue') || request()->routeIs('public.lots.*')">
                                 {{ __('Lots') }}
+                            </x-nav-link>
+
+                            <x-nav-link :href="route('client.dashboard')" :active="request()->routeIs('client.dashboard')">
+                                {{ __('Dashboard') }}
+                            </x-nav-link>
+
+                            <x-nav-link :href="route('client.preferences.edit')" :active="request()->routeIs('client.preferences.*')">
+                                {{ __('Preferences') }}
                             </x-nav-link>
                         @endif
                     @else
@@ -125,6 +137,9 @@
                     <x-responsive-nav-link :href="route('admin.auctions.index')" :active="request()->routeIs('admin.auctions.*')">
                         {{ __('Auctions') }}
                     </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('admin.categories.index')" :active="request()->routeIs('admin.categories.*')">
+                        {{ __('Categories') }}
+                    </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('admin.sales.index')" :active="request()->routeIs('admin.sales.*')">
                         {{ __('Sales') }}
                     </x-responsive-nav-link>
@@ -140,6 +155,12 @@
                     </x-responsive-nav-link>
                     <x-responsive-nav-link :href="route('public.catalogue')" :active="request()->routeIs('public.catalogue') || request()->routeIs('public.lots.*')">
                         {{ __('Lots') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('client.dashboard')" :active="request()->routeIs('client.dashboard')">
+                        {{ __('Dashboard') }}
+                    </x-responsive-nav-link>
+                    <x-responsive-nav-link :href="route('client.preferences.edit')" :active="request()->routeIs('client.preferences.*')">
+                        {{ __('Preferences') }}
                     </x-responsive-nav-link>
                 @endif
             @else

@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Domain\Clients\Models\ClientPreference;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -42,5 +44,9 @@ class User extends Authenticatable
     {
         return $this->role === self::ROLE_CLIENT;
     }
-}
 
+    public function preference(): HasOne
+    {
+        return $this->hasOne(ClientPreference::class, 'user_id');
+    }
+}

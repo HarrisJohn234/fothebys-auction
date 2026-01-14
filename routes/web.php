@@ -2,9 +2,12 @@
 
 use App\Http\Controllers\Admin\AdminBidController;
 use App\Http\Controllers\Admin\AuctionAdminController;
+use App\Http\Controllers\Admin\CategoryAdminController;
 use App\Http\Controllers\Admin\LotAdminController;
 use App\Http\Controllers\Admin\ReportAdminController;
 use App\Http\Controllers\Admin\SaleAdminController;
+use App\Http\Controllers\Client\ClientDashboardController;
+use App\Http\Controllers\Client\ClientPreferenceController;
 use App\Http\Controllers\ClientBidController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\PublicCatalogueController;
@@ -19,7 +22,8 @@ Route::get('/dashboard', function () {
         return redirect()->route('admin.auctions.index');
     }
 
-    return redirect()->route('home');
+    // Clients go to their dashboard (Gap C)
+    return redirect()->route('client.dashboard');
 })->middleware(['auth'])->name('dashboard');
 
 Route::get('/catalogue', [PublicCatalogueController::class, 'index'])->name('public.catalogue');
@@ -29,11 +33,22 @@ Route::post('/lots/{lot}/commission-bid', [ClientBidController::class, 'store'])
     ->middleware('auth')
     ->name('lots.commission-bid');
 
+// Client area (Gap C)
+Route::middleware(['auth'])->prefix('client')->name('client.')->group(function () {
+    Route::get('/dashboard', [ClientDashboardController::class, 'index'])->name('dashboard');
+
+    Route::get('/preferences', [ClientPreferenceController::class, 'edit'])->name('preferences.edit');
+    Route::put('/preferences', [ClientPreferenceController::class, 'update'])->name('preferences.update');
+});
+
 Route::middleware(['auth', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::resource('auctions', AuctionAdminController::class)->names('auctions');
     Route::post('auctions/{auction}/close', [AuctionAdminController::class, 'close'])->name('auctions.close');
 
     Route::resource('lots', LotAdminController::class);
+
+    // Gap B: Categories CRUD
+    Route::resource('categories', CategoryAdminController::class)->except(['show']);
 
     Route::get('sales', [SaleAdminController::class, 'index'])->name('sales.index');
     Route::get('lots/{lot}/sale', [SaleAdminController::class, 'create'])->name('sales.create');
