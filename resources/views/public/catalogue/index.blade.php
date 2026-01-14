@@ -1,7 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl">Public Catalogue</h2>
-    </x-slot>
 
     <div class="p-6 space-y-4">
         <form class="flex gap-2 flex-wrap items-end" method="GET" action="{{ route('public.catalogue') }}">

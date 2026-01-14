@@ -1,7 +1,8 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl">Sales Report</h2></x-slot>
-
     <div class="p-6 space-y-4">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-semibold">Sales Report</h1>
+        </div>
         <div class="border rounded p-4">
             <div>Total hammer: £{{ number_format($totalHammer, 2) }}</div>
             <div class="font-semibold">Total commission: £{{ number_format($totalCommission, 2) }}</div>

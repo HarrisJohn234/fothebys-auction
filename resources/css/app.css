@@ -1,52 +1,37 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* ================================
+   Fotheby's Brand Variables
+   ================================ */
 :root {
-    --fothebys-purple-light: #f3f0fa;
-    --fothebys-purple-main: #5b4b8a;
+    --fothebys-purple-light: #381d75;
+    --fothebys-purple-main: #6149aa;
     --fothebys-purple-dark: #3f335f;
 
     --fothebys-gold: #c9a24d;
     --fothebys-gold-soft: #e6d18a;
 }
 
-
-/* Brand components (keeps the UI consistent + easy to tweak later) */
+/* ================================
+   Brand Utility Classes
+   ================================ */
 @layer components {
-  .bg-brand-page {
-    @apply bg-brand-cream text-brand-ink;
-  }
+    .brand-link {
+        @apply transition;
+        color: var(--fothebys-purple-dark);
+    }
 
-  .card {
-    @apply bg-white border border-gray-200 rounded-xl shadow-sm;
-  }
+    .brand-link:hover {
+        color: var(--fothebys-gold);
+    }
 
-  .card-pad {
-    @apply p-6;
-  }
+    .brand-header {
+        background-color: var(--fothebys-purple-light);
+    }
 
-  .btn-primary {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md
-           bg-brand-purple text-white font-semibold text-sm
-           hover:bg-brand-purpleDark
-           focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2
-           transition;
-  }
-
-  .btn-secondary {
-    @apply inline-flex items-center justify-center px-4 py-2 rounded-md
-           bg-white text-brand-purple border border-gray-300 font-semibold text-sm
-           hover:border-brand-purple hover:text-brand-purpleDark
-           focus:outline-none focus:ring-2 focus:ring-brand-gold focus:ring-offset-2
-           transition;
-  }
-
-  .badge-gold {
-    @apply inline-flex items-center px-2 py-1 rounded-full text-xs font-semibold
-           bg-brand-goldSoft text-brand-purple border border-brand-gold/40;
-  }
-
-  .link-brand {
-    @apply text-brand-purple hover:text-brand-purpleDark underline;
-  }
+    .brand-footer {
+        background-color: var(--fothebys-purple-dark);
+    }
 }

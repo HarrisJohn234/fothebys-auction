@@ -1,10 +1,10 @@
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
+<nav x-data="{ open: false }" class="bg-brand-purpleSoft border-b border-brand-gold/20">
+    <div class="max-w-screen-xl mx-auto px-6 lg:px-10">
+        <div class="flex justify-between h-24 items-center">
             <div class="flex">
                 <div class="shrink-0 flex items-center">
                     <a href="{{ route('dashboard') }}" class="flex items-center">
-                        <x-application-logo size="lg" showText="true" />
+                        <x-application-logo size="xl" showText="true" />
                     </a>
                 </div>
 
@@ -68,7 +68,7 @@
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-brand-purpleDark bg-transparent hover:text-brand-gold focus:outline-none transition ease-in-out duration-150">
                             <div>
                                 @auth
                                     {{ auth()->user()->name }}
@@ -103,10 +103,10 @@
                         @else
                             <div class="px-4 py-2 flex gap-3">
                                 @if (Route::has('login'))
-                                    <a class="text-sm text-gray-700 underline" href="{{ route('login') }}">Log in</a>
+                                    <a class="text-sm text-brand-purpleDark hover:text-brand-gold underline" href="{{ route('login') }}">Log in</a>
                                 @endif
                                 @if (Route::has('register'))
-                                    <a class="text-sm text-gray-700 underline" href="{{ route('register') }}">Register</a>
+                                    <a class="text-sm text-brand-purpleDark hover:text-brand-gold underline" href="{{ route('register') }}">Register</a>
                                 @endif
                             </div>
                         @endauth
@@ -116,7 +116,7 @@
 
             {{-- Mobile hamburger --}}
             <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-brand-purpleDark hover:text-brand-gold hover:bg-white/40 focus:outline-none focus:bg-white/40 focus:text-brand-gold transition duration-150 ease-in-out">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -128,7 +128,7 @@
 
     {{-- Mobile nav --}}
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+        <div class="pt-2 pb-3 space-y-1 bg-brand-purpleSoft">
             @auth
                 @if(auth()->user()->isAdmin())
                     <x-responsive-nav-link :href="route('admin.lots.index')" :active="request()->routeIs('admin.lots.*')">
@@ -173,11 +173,11 @@
             @endauth
         </div>
 
-        <div class="pt-4 pb-1 border-t border-gray-200">
+        <div class="pt-4 pb-1 border-t border-brand-gold/20 bg-brand-purpleSoft">
             @auth
                 <div class="px-4">
-                    <div class="font-medium text-base text-gray-800">{{ auth()->user()->name }}</div>
-                    <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
+                    <div class="font-medium text-base text-brand-purpleDark">{{ auth()->user()->name }}</div>
+                    <div class="font-medium text-sm text-gray-600">{{ auth()->user()->email }}</div>
                 </div>
 
                 <div class="mt-3 space-y-1">
@@ -198,10 +198,10 @@
             @else
                 <div class="px-4 py-3 flex gap-3">
                     @if (Route::has('login'))
-                        <a class="text-sm text-gray-700 underline" href="{{ route('login') }}">Log in</a>
+                        <a class="text-sm text-brand-purpleDark hover:text-brand-gold underline" href="{{ route('login') }}">Log in</a>
                     @endif
                     @if (Route::has('register'))
-                        <a class="text-sm text-gray-700 underline" href="{{ route('register') }}">Register</a>
+                        <a class="text-sm text-brand-purpleDark hover:text-brand-gold underline" href="{{ route('register') }}">Register</a>
                     @endif
                 </div>
             @endauth

@@ -1,7 +1,10 @@
 <x-app-layout>
-    <x-slot name="header"><h2 class="font-semibold text-xl">Commission Bids</h2></x-slot>
+    
 
     <div class="p-6">
+        <div class="flex items-center justify-between mb-6">
+            <h1 class="text-2xl font-semibold">Commission Bids</h1>
+        </div>
         <table class="w-full border">
             <thead>
                 <tr class="border-b">

@@ -1,7 +1,4 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl">Preferences</h2>
-    </x-slot>
 
     <div class="p-6 max-w-xl space-y-4">
         @if (session('success'))
@@ -17,6 +14,9 @@
                 </ul>
             </div>
         @endif
+        <div>
+            <h2 class="font-semibold text-xl">Preferences</h2>
+        </div>
 
         <form method="POST" action="{{ route('client.preferences.update') }}" class="space-y-4">
             @csrf
